@@ -1,186 +1,206 @@
 #include <stdio.h>
-#include <string.h>
-#define MAX 20
-#define Q 3
 
-typedef struct {
+#define MAX 10
+#define QUANTUM 3
+
+struct process
+{
     int pid, at, bt, pr;
-    int ct, tat, wt, rt;
-} P;
+    int ct, tat, wt;
+};
 
-/* -------- Utility -------- */
+int main()
+{
+    struct process p[MAX];
+    int n, i, j, time;
+    float avg_fcfs=0, avg_sjf=0, avg_pr=0, avg_rr=0;
 
-void copy(P a[], P b[], int n) {
-    for (int i = 0; i < n; i++)
-        a[i] = b[i];
-}
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
 
-float avgWT(P p[], int n) {
-    float sum = 0;
-    for (int i = 0; i < n; i++)
-        sum += p[i].wt;
-    return sum / n;
-}
+    for(i=0;i<n;i++)
+    {
+        printf("\nPID AT BT PR: ");
+        scanf("%d%d%d%d",&p[i].pid,&p[i].at,&p[i].bt,&p[i].pr);
+    }
 
-/* -------- Print Functions -------- */
+    printf("\nFCFS\n----------------------------\n");
+    printf("PID AT BT PR CT TAT WT\n----------------------------\n");
 
-void printFull(P p[], int n, char name[]) {
-    printf("\n%s\n", name);
-    printf("----------------------------\n");
-    printf("PID AT BT PR CT TAT WT\n");
-    printf("----------------------------\n");
-    for (int i = 0; i < n; i++)
-        printf("%d   %d  %d  %d  %d  %d   %d\n",
-               p[i].pid, p[i].at, p[i].bt, p[i].pr,
-               p[i].ct, p[i].tat, p[i].wt);
-}
+    time = 0;
 
-/* -------- FCFS -------- */
+    for(i=0;i<n;i++)
+    {
+        if(time < p[i].at)
+            time = p[i].at;
 
-float FCFS(P p[], int n) {
-    int time = 0;
-    for (int i = 0; i < n; i++) {
-        if (time < p[i].at) time = p[i].at;
-        time += p[i].bt;
-        p[i].ct = time;
+        p[i].ct = time + p[i].bt;
         p[i].tat = p[i].ct - p[i].at;
         p[i].wt = p[i].tat - p[i].bt;
+
+        avg_fcfs += p[i].wt;
+        time = p[i].ct;
+
+        printf("%d   %d  %d  %d  %d  %d   %d\n",
+               p[i].pid,p[i].at,p[i].bt,p[i].pr,
+               p[i].ct,p[i].tat,p[i].wt);
     }
-    return avgWT(p, n);
-}
 
-/* -------- SJF (Non-Preemptive) -------- */
+    avg_fcfs = avg_fcfs/n;
 
-float SJF(P p[], int n) {
-    int done = 0, time = 0, vis[MAX] = {0};
+    printf("\nSJF\n----------------------------\n");
+    printf("PID AT BT PR CT TAT WT\n----------------------------\n");
 
-    while (done < n) {
-        int idx = -1;
+    int completed[MAX]={0};
+    int done=0;
+    time=0;
 
-        for (int i = 0; i < n; i++) {
-            // Check if arrived, not finished, and find the shortest burst time
-            if (p[i].at <= time && !vis[i]) {
-                if (idx == -1 || p[i].bt < p[idx].bt)
-                    idx = i;
-            }
-        }
+    while(done<n)
+    {
+        int min=9999, index=-1;
 
-        if (idx == -1) {
-            time++;
-        } else {
-            // Process runs to completion (Non-preemptive)
-            time += p[idx].bt; 
-            p[idx].ct = time;
-            p[idx].tat = p[idx].ct - p[idx].at;
-            p[idx].wt = p[idx].tat - p[idx].bt;
-            vis[idx] = 1;
-            done++;
-        }
-    }
-    return avgWT(p, n);
-}
-
-/* -------- Priority (Non-Preemptive) -------- */
-
-float Priority(P p[], int n) {
-    int done = 0, time = 0, vis[MAX] = {0};
-
-    while (done < n) {
-        int idx = -1;
-
-        for (int i = 0; i < n; i++)
-            if (p[i].at <= time && !vis[i])
-                if (idx == -1 || p[i].pr > p[idx].pr)
-                    idx = i;
-
-        if (idx == -1) {
-            time++;
-        } else {
-            time += p[idx].bt;
-            p[idx].ct = time;
-            p[idx].tat = p[idx].ct - p[idx].at;
-            p[idx].wt = p[idx].tat - p[idx].bt;
-            vis[idx] = 1;
-            done++;
-        }
-    }
-    return avgWT(p, n);
-}
-
-/* -------- Round Robin -------- */
-
-float RR(P p[], int n) {
-    int done = 0, time = 0;
-
-    for (int i = 0; i < n; i++)
-        p[i].rt = p[i].bt;
-
-    while (done < n) {
-        int executed = 0;
-
-        for (int i = 0; i < n; i++) {
-            if (p[i].at <= time && p[i].rt > 0) {
-                executed = 1;
-
-                int t = (p[i].rt > Q) ? Q : p[i].rt;
-                p[i].rt -= t;
-                time += t;
-
-                if (p[i].rt == 0) {
-                    done++;
-                    p[i].ct = time;
-                    p[i].tat = p[i].ct - p[i].at;
-                    p[i].wt = p[i].tat - p[i].bt;
+        for(i=0;i<n;i++)
+        {
+            if(p[i].at<=time && completed[i]==0)
+            {
+                if(p[i].bt < min)
+                {
+                    min=p[i].bt;
+                    index=i;
                 }
             }
         }
-        if (!executed) time++;
+
+        if(index==-1)
+        {
+            time++;
+        }
+        else
+        {
+            p[index].ct=time+p[index].bt;
+            p[index].tat=p[index].ct-p[index].at;
+            p[index].wt=p[index].tat-p[index].bt;
+
+            avg_sjf+=p[index].wt;
+            time=p[index].ct;
+            completed[index]=1;
+            done++;
+        }
     }
-    return avgWT(p, n);
-}
 
-/* -------- MAIN -------- */
+    for(i=0;i<n;i++)
+        printf("%d   %d  %d  %d  %d  %d   %d\n",
+               p[i].pid,p[i].at,p[i].bt,p[i].pr,
+               p[i].ct,p[i].tat,p[i].wt);
 
-int main() {
-    int n;
-    P p[MAX], temp[MAX];
+    avg_sjf=avg_sjf/n;
 
-    printf("Enter number of processes: ");
-    if (scanf("%d", &n) != 1) return 0;
+    printf("\nPriority\n----------------------------\n");
+    printf("PID AT BT PR CT TAT WT\n----------------------------\n");
 
-    for (int i = 0; i < n; i++) {
-        printf("\nPID AT BT PR: ");
-        scanf("%d%d%d%d", &p[i].pid, &p[i].at, &p[i].bt, &p[i].pr);
+    for(i=0;i<n;i++)
+        completed[i]=0;
+
+    done=0;
+    time=0;
+
+    while(done<n)
+    {
+        int max=-1, index=-1;
+
+        for(i=0;i<n;i++)
+        {
+            if(p[i].at<=time && completed[i]==0)
+            {
+                if(p[i].pr > max)
+                {
+                    max=p[i].pr;
+                    index=i;
+                }
+            }
+        }
+
+        if(index==-1)
+        {
+            time++;
+        }
+        else
+        {
+            p[index].ct=time+p[index].bt;
+            p[index].tat=p[index].ct-p[index].at;
+            p[index].wt=p[index].tat-p[index].bt;
+
+            avg_pr+=p[index].wt;
+            time=p[index].ct;
+            completed[index]=1;
+            done++;
+        }
     }
 
-    copy(temp, p, n);
-    float a = FCFS(temp, n);
-    printFull(temp, n, "FCFS");
+    for(i=0;i<n;i++)
+        printf("%d   %d  %d  %d  %d  %d   %d\n",
+               p[i].pid,p[i].at,p[i].bt,p[i].pr,
+               p[i].ct,p[i].tat,p[i].wt);
 
-    copy(temp, p, n);
-    float b = SJF(temp, n);
-    printFull(temp, n, "SJF");
+    avg_pr=avg_pr/n;
 
-    copy(temp, p, n);
-    float c = Priority(temp, n);
-    printFull(temp, n, "Priority");
+    printf("\nRound Robin\n----------------------------\n");
+    printf("PID AT BT PR CT TAT WT\n----------------------------\n");
 
-    copy(temp, p, n);
-    float d = RR(temp, n);
-    printFull(temp, n, "Round Robin");
+    int rem[MAX];
+    for(i=0;i<n;i++)
+        rem[i]=p[i].bt;
 
-    printf("\nAverage Waiting Time\n");
-    printf("----------------------------\n");
-    printf("FCFS: %.2f\nSJF: %.2f\nPriority: %.2f\nRR: %.2f\n", a, b, c, d);
+    int remain=n;
+    time=0;
 
-    float min = a;
-    char algo[20] = "FCFS";
+    while(remain>0)
+    {
+        for(i=0;i<n;i++)
+        {
+            if(rem[i]>0 && p[i].at<=time)
+            {
+                if(rem[i]>QUANTUM)
+                {
+                    time+=QUANTUM;
+                    rem[i]-=QUANTUM;
+                }
+                else
+                {
+                    time+=rem[i];
+                    p[i].ct=time;
+                    p[i].tat=p[i].ct-p[i].at;
+                    p[i].wt=p[i].tat-p[i].bt;
 
-    if (b < min) { min = b; strcpy(algo, "SJF"); }
-    if (c < min) { min = c; strcpy(algo, "Priority"); }
-    if (d < min) { min = d; strcpy(algo, "Round Robin"); }
+                    avg_rr+=p[i].wt;
+                    rem[i]=0;
+                    remain--;
+                }
+            }
+        }
+    }
 
-    printf("\nMinimum Average Waiting Time: %s (%.2f)\n", algo, min);
+    for(i=0;i<n;i++)
+        printf("%d   %d  %d  %d  %d  %d   %d\n",
+               p[i].pid,p[i].at,p[i].bt,p[i].pr,
+               p[i].ct,p[i].tat,p[i].wt);
+
+    avg_rr=avg_rr/n;
+
+    printf("\nAverage Waiting Time\n----------------------------\n");
+    printf("FCFS: %.2f\n",avg_fcfs);
+    printf("SJF: %.2f\n",avg_sjf);
+    printf("Priority: %.2f\n",avg_pr);
+    printf("RR: %.2f\n",avg_rr);
+
+    float min=avg_fcfs;
+    char name[20]="FCFS";
+
+    if(avg_sjf<min){ min=avg_sjf; sprintf(name,"SJF"); }
+    if(avg_pr<min){ min=avg_pr; sprintf(name,"Priority"); }
+    if(avg_rr<min){ min=avg_rr; sprintf(name,"RR"); }
+
+    printf("\nMinimum Average Waiting Time: %s (%.2f)\n",name,min);
 
     return 0;
 }
