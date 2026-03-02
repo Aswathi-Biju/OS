@@ -96,7 +96,7 @@ int main()
     avg_sjf=avg_sjf/n;
 
     printf("\nPriority\n----------------------------\n");
-    printf("PID AT BT PR CT TAT WT\n----------------------------\n");
+    printf("PID AT BT PR CT TAT WT\n----------------------------\n"); 
 
     for(i=0;i<n;i++)
         completed[i]=0;
@@ -106,15 +106,14 @@ int main()
 
     while(done<n)
     {
-        int max=-1, index=-1;
-
+        int min=9999, index=-1;
         for(i=0;i<n;i++)
         {
             if(p[i].at<=time && completed[i]==0)
             {
-                if(p[i].pr > max)
+                if(p[i].pr < min)
                 {
-                    max=p[i].pr;
+                    min=p[i].pr;
                     index=i;
                 }
             }
