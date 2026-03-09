@@ -1,3 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define BUFFER_SIZE 5
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+
+int empty = BUFFER_SIZE; // number of empty slots
+int full = 0;            // number of filled slots
+int mutex = 1;           // mutual exclusion
+
+int main()
+{
+    int item,i;
+    srand(time(0)); // diff o/p on every run 
+    //srand(10); // fixed o/p on every run
+
+    for(i = 1; i < 5; i++)
+    {
+        // PRODUCER
+        //item = i;
+
+        if(empty > 0 && mutex == 1)
+        {
+            mutex = 0; // lock
+            item = rand() % 10;
+            buffer[in] = item;
+            printf("Producer: %d Produces\n", item);
+
+            in = (in + 1) % BUFFER_SIZE;
+
+            mutex = 1; // unlock
+            empty--;
+            full++;
+        }
+
+        // CONSUMER
+        if(full > 0 && mutex == 1)
+        {
+            mutex = 0; // lock
+            item = buffer[out];
+            printf("Consumer: %d Consumes\n", item);
+
+            out = (out + 1) % BUFFER_SIZE;
+
+            mutex = 1; // unlock
+            full--;
+            empty++;
+        }
+    }
+
+    return 0;
+}
+/*
 #include <stdio.h>      // for printf
 #include <pthread.h>    // for threads (producer and consumer)
 #include <semaphore.h>  // for semaphore functions
@@ -88,3 +143,4 @@ int main()
 
     return 0; // end program
 }
+*/
