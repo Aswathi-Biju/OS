@@ -1,6 +1,79 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#define BUFFER_SIZE 5
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+
+int empty = BUFFER_SIZE; // number of empty slots
+int full = 0;            // number of filled slots
+int mutex = 1;           // mutual exclusion (simulated)
+
+int main()
+{
+    int item, i, choice;
+
+    srand(time(0)); // random seed
+
+    for(i = 0; i < 20; i++) // more iterations for better randomness
+    {
+        choice = rand() % 2; // 0 = producer, 1 = consumer
+
+        if(choice == 0)
+        {
+            // PRODUCER
+            if(empty > 0 && mutex == 1)
+            {
+                mutex = 0; // lock
+
+                item = rand() % 10;
+                buffer[in] = item;
+                printf("Producer: %d Produces\n", item);
+
+                in = (in + 1) % BUFFER_SIZE;
+
+                mutex = 1; // unlock
+                empty--;
+                full++;
+            }
+            else
+            {
+                printf("Producer waiting... (Buffer Full)\n");
+            }
+        }
+        else
+        {
+            // CONSUMER
+            if(full > 0 && mutex == 1)
+            {
+                mutex = 0; // lock
+
+                item = buffer[out];
+                printf("Consumer: %d Consumes\n", item);
+
+                out = (out + 1) % BUFFER_SIZE;
+
+                mutex = 1; // unlock
+                full--;
+                empty++;
+            }
+            else
+            {
+                printf("Consumer waiting... (Buffer Empty)\n");
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+
+/*#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #define BUFFER_SIZE 5
 
 int buffer[BUFFER_SIZE];
