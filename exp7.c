@@ -17,7 +17,7 @@ int main()
 
     srand(time(0)); // random seed
 
-    for(i = 0; i < 20; i++) // more iterations for better randomness
+    for(i = 0; i < 10; i++) // more iterations for better randomness
     {
         choice = rand() % 2; // 0 = producer, 1 = consumer
 
