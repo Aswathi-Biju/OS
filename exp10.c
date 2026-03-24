@@ -5,8 +5,24 @@
 #define m 5000
 
 void SSTF(int req[], int head){
-    
-    printf("SSTF Total Seek Time: \n");
+    int visited[s]={0};
+    int total = 0;
+    for(int i=0; i<s; i++){
+        int min=10000, index = -1;
+        for(int j = 0; j<s; j++){
+            if(!visited[j]){
+                int dist = abs(head-req[j]);
+                if(dist<min){
+                    min =  dist;
+                    index = j;
+                }
+            }
+        }
+        visited[index] = 1;
+        total += min;
+        head = req[index];
+    }
+    printf("SSTF Total Seek Time: %d\n", total);
 }
 
 void LOOK(int req[], int head){
@@ -42,7 +58,6 @@ int main(){
     CSCAN(r3,head);
     return 0;
 }
-
 
 
 
