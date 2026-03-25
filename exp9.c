@@ -1,117 +1,117 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<time.h>
-#define n 10
+// #include<stdio.h>
+// #include<stdlib.h>
+// #include<time.h>
+// #define n 10
 
-int fifo(int ref[], int f){
-    int frame[10], faults = 0, pos = 0;
+// int fifo(int ref[], int f){
+//     int frame[10], faults = 0, pos = 0;
 
-    for(int i=0; i<f; i++) frame[i] = -1;
+//     for(int i=0; i<f; i++) frame[i] = -1;
 
-    for(int i=0; i<n; i++){
-        int found = 0;
+//     for(int i=0; i<n; i++){
+//         int found = 0;
 
-        for(int j=0; j<f; j++){
-            if(frame[j] == ref[i]) found = 1;
-        }
+//         for(int j=0; j<f; j++){
+//             if(frame[j] == ref[i]) found = 1;
+//         }
 
-        if(!found){
-            frame[pos] = ref[i];
-            pos = (pos + 1) % f;
-            faults++;
-        }
-    }
-    return faults;
-}
+//         if(!found){
+//             frame[pos] = ref[i];
+//             pos = (pos + 1) % f;
+//             faults++;
+//         }
+//     }
+//     return faults;
+// }
 
-int lru(int ref[], int f){
-    int frame[10], time[10], faults = 0, t = 0;
+// int lru(int ref[], int f){
+//     int frame[10], time[10], faults = 0, t = 0;
 
-    for(int i=0; i<f; i++){
-        frame[i] = -1;
-        time[i] = 0;
-    }
+//     for(int i=0; i<f; i++){
+//         frame[i] = -1;
+//         time[i] = 0;
+//     }
 
-    for(int i=0; i<n; i++){
-        int found = 0;
+//     for(int i=0; i<n; i++){
+//         int found = 0;
 
-        for(int j=0; j<f; j++){
-            if(frame[j] == ref[i]){
-                t++;
-                time[j] = t;
-                found = 1;
-            }
-        }
+//         for(int j=0; j<f; j++){
+//             if(frame[j] == ref[i]){
+//                 t++;
+//                 time[j] = t;
+//                 found = 1;
+//             }
+//         }
 
-        if(!found){
-            int lru = 0;
-            for(int j=1; j<f; j++){
-                if(time[j] < time[lru]) lru = j;
-            }
+//         if(!found){
+//             int lru = 0;
+//             for(int j=1; j<f; j++){
+//                 if(time[j] < time[lru]) lru = j;
+//             }
 
-            frame[lru] = ref[i];
-            t++;
-            time[lru] = t;
-            faults++;
-        }
-    }
-    return faults;
-}
+//             frame[lru] = ref[i];
+//             t++;
+//             time[lru] = t;
+//             faults++;
+//         }
+//     }
+//     return faults;
+// }
 
-int optimal(int ref[], int f){
-    int frame[10], faults = 0;
+// int optimal(int ref[], int f){
+//     int frame[10], faults = 0;
 
-    for(int i=0; i<f; i++) frame[i] = -1;
+//     for(int i=0; i<f; i++) frame[i] = -1;
 
-    for(int i=0; i<n; i++){
-        int found = 0;
+//     for(int i=0; i<n; i++){
+//         int found = 0;
 
-        for(int j=0; j<f; j++){
-            if(frame[j] == ref[i]) found = 1;
-        }
+//         for(int j=0; j<f; j++){
+//             if(frame[j] == ref[i]) found = 1;
+//         }
 
-        if(!found){
-            int pos = -1, far = i;
+//         if(!found){
+//             int pos = -1, far = i;
 
-            for(int j=0; j<f; j++){
-                int k;
-                for(k=i+1; k<n; k++){
-                    if(frame[j] == ref[k]) break;
-                }
+//             for(int j=0; j<f; j++){
+//                 int k;
+//                 for(k=i+1; k<n; k++){
+//                     if(frame[j] == ref[k]) break;
+//                 }
 
-                if(k > far){
-                    far = k;
-                    pos = j;
-                }
-            }
+//                 if(k > far){
+//                     far = k;
+//                     pos = j;
+//                 }
+//             }
 
-            if(pos == -1) pos = 0;
+//             if(pos == -1) pos = 0;
 
-            frame[pos] = ref[i];
-            faults++;
-        }
-    }
-    return faults;
-}
+//             frame[pos] = ref[i];
+//             faults++;
+//         }
+//     }
+//     return faults;
+// }
 
-int main(){
-    int ref[n];
-    srand(time(0));
-    for(int i=0; i<n; i++){
-        ref[i] =  rand()%10;
-    }
-    printf("Reference String: ");
-    for(int i=0; i<n; i++){
-        printf("%d ", ref[i]);
-    }
-    printf("\n");
-    int f = (rand()%7)+1;
-    printf("Frame Size: %d\n", f);
-    printf("FIFO Faults: %d\n", fifo(ref,f));
-    printf("LRU Faults: %d\n", lru(ref,f));
-    printf("Optimal Faults: %d\n", optimal(ref,f));
-    return 0;
-}
+// int main(){
+//     int ref[n];
+//     srand(time(0));
+//     for(int i=0; i<n; i++){
+//         ref[i] =  rand()%10;
+//     }
+//     printf("Reference String: ");
+//     for(int i=0; i<n; i++){
+//         printf("%d ", ref[i]);
+//     }
+//     printf("\n");
+//     int f = (rand()%7)+1;
+//     printf("Frame Size: %d\n", f);
+//     printf("FIFO Faults: %d\n", fifo(ref,f));
+//     printf("LRU Faults: %d\n", lru(ref,f));
+//     printf("Optimal Faults: %d\n", optimal(ref,f));
+//     return 0;
+// }
 
 
 
